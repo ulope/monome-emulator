@@ -20,8 +20,8 @@ import netP5.*;
 import java.awt.event.KeyEvent;
 
 // monome emulator size
-static final int W = 32;
-static final int H = 16;
+static final int W = 8;
+static final int H = 8;
 
 // button size
 static final int S = 28;
@@ -51,21 +51,21 @@ int cursorY = 0;
 OscP5 oscP5;
 String host = "127.0.0.1";
 int sendPort = 9090;
-int receivePort = 9091;
+int receivePort = 9090;
 
 void setup()
 {
   size(W * S + 5*S + 2*W, H * S + 5*S + 2*H);
   smooth();
   background(0);
-  clear(0);
+  all(0);
 
   oscP5 = new OscP5(this, host, sendPort, receivePort, "oscEvent");
-  oscP5.plug(this, "clear", "/40h/clear");
-  oscP5.plug(this, "led", "/40h/led");
-  oscP5.plug(this, "led_col", "/40h/led_col");
-  oscP5.plug(this, "led_row", "/40h/led_row");
-  oscP5.plug(this, "frame", "/40h/frame");
+  oscP5.plug(this, "all", "/monome/grid/led/all");
+  oscP5.plug(this, "led", "/monome/grid/led");
+  oscP5.plug(this, "led_col", "/monome/grid/led/col");
+  oscP5.plug(this, "led_row", "/monome/grid/led/row");
+  oscP5.plug(this, "frame", "/monome/grid/led/map");
 }
 
 void draw()
@@ -95,7 +95,7 @@ void draw()
   roundRect(2.5*S + cursorX * (S + 2), 2.5*S + cursorY * (S + 2), S, S, 2);
 }
 
-void clear(final int state)
+void all(final int state)
 {
   for (int x = 0; x < W; x++)
   {
@@ -121,7 +121,7 @@ void led(final int x, final int y, final int state)
   }
 }
 
-void led_col(final int col, final int data)
+void led_col(final int offset, final int col, final int data)
 {
   led_col(col, (byte) data);
 }
@@ -138,7 +138,7 @@ void led_col(final int col, final byte data)
   led(col, 7, data & 128);
 }
 
-void led_row(final int row, final int data)
+void led_row(final int offset, final int row, final int data)
 {
   led_row(row, (byte) data);
 }
@@ -155,7 +155,7 @@ void led_row(final int row, final byte data)
   led(7, row, data & 128);
 }
 
-void frame(final int a, final int b, final int c, final int d,
+void frame(final int off_x, final int off_y, final int a, final int b, final int c, final int d,
   final int e, final int f, final int g, final int h)
 {
   frame((byte) a, (byte) b, (byte) c, (byte) d,
@@ -165,14 +165,14 @@ void frame(final int a, final int b, final int c, final int d,
 void frame(final byte a, final byte b, final byte c, final byte d,
   final byte e, final byte f, final byte g, final byte h)
 {
-  led_col(0, a);
-  led_col(1, b);
-  led_col(2, c);
-  led_col(3, d);
-  led_col(4, e);
-  led_col(5, f);
-  led_col(6, g);
-  led_col(7, h);
+  led_row(0, a);
+  led_row(1, b);
+  led_row(2, c);
+  led_row(3, d);
+  led_row(4, e);
+  led_row(5, f);
+  led_row(6, g);
+  led_row(7, h);
 }
 
 void buttonPressed(final int x, final int y)
@@ -335,4 +335,3 @@ private void quadraticBezierVertex(final float cpx, final float cpy, final float
   float cp2y = cp1y + (y - prevY)/3.0;
   bezierVertex(cp1x, cp1y, cp2x, cp2y, x, y);
 }
-
